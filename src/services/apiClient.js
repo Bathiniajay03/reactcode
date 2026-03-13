@@ -1,71 +1,181 @@
-import axios from 'axios';
+// import axios from 'axios';
+
+// const normalizeBaseUrl = (url) => {
+//   if (!url || typeof url !== 'string') return null;
+//   const trimmed = url.trim().replace(/\/+$/, '');
+//   if (!trimmed) return null;
+//   return trimmed.toLowerCase().endsWith('/api') ? trimmed : `${trimmed}/api`;
+// };
+
+// const resolveLocalCandidates = () => {
+//   const configured = normalizeBaseUrl(process.env.REACT_APP_API_BASE_URL);
+//   const stored = normalizeBaseUrl(localStorage.getItem('erp_api_base_url'));
+//   const defaults = [
+//     'http://localhost:5157/api',
+//     'http://localhost:5103/api',
+//     'https://localhost:7088/api'
+//   ];
+
+//   const ordered = [configured, stored, ...defaults].filter(Boolean);
+//   return [...new Set(ordered)];
+// };
+
+// const candidateBaseUrls = resolveLocalCandidates();
+// let activeBaseUrl = candidateBaseUrls[0] || 'http://localhost:5157/api';
+
+// const apiClient = axios.create({
+//   baseURL: activeBaseUrl,
+//   timeout: 10000,
+//   headers: { 'Content-Type': 'application/json' }
+// });
+
+// apiClient.interceptors.request.use((config) => {
+//   config.baseURL = activeBaseUrl;
+//   config.__candidateIndex = candidateBaseUrls.findIndex((url) => url === activeBaseUrl);
+//   const token = localStorage.getItem('erp_token');
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
+
+// apiClient.interceptors.response.use(
+//   (response) => response,
+//   async (error) => {
+//     const status = error?.response?.status;
+//     const requestUrl = String(error?.config?.url || '').toLowerCase();
+//     if (
+//       status === 401 &&
+//       !requestUrl.includes('/smart-erp/auth/login') &&
+//       !requestUrl.includes('/smart-erp/auth/verify-mfa')
+//     ) {
+//       localStorage.removeItem('erp_token');
+//       localStorage.removeItem('erp_role');
+//       window.dispatchEvent(new Event('erp:unauthorized'));
+//       return Promise.reject(error);
+//     }
+
+//     const requestConfig = error?.config;
+//     const isNetworkIssue = !error?.response || error?.code === 'ERR_NETWORK' || error?.code === 'ECONNABORTED';
+
+//     if (!requestConfig || !isNetworkIssue) {
+//       return Promise.reject(error);
+//     }
+
+//     const currentIndex =
+//       typeof requestConfig.__candidateIndex === 'number'
+//         ? requestConfig.__candidateIndex
+//         : candidateBaseUrls.findIndex((url) => url === activeBaseUrl);
+//     const nextIndex = currentIndex + 1;
+
+//     if (nextIndex >= candidateBaseUrls.length) {
+//       return Promise.reject(error);
+//     }
+
+//     activeBaseUrl = candidateBaseUrls[nextIndex];
+//     localStorage.setItem('erp_api_base_url', activeBaseUrl);
+
+//     requestConfig.__candidateIndex = nextIndex;
+//     requestConfig.baseURL = activeBaseUrl;
+//     return apiClient(requestConfig);
+//   }
+// );
+
+// export default apiClient;
+
+
+import axios from "axios";
 
 const normalizeBaseUrl = (url) => {
-  if (!url || typeof url !== 'string') return null;
-  const trimmed = url.trim().replace(/\/+$/, '');
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim().replace(/\/+$/, "");
   if (!trimmed) return null;
-  return trimmed.toLowerCase().endsWith('/api') ? trimmed : `${trimmed}/api`;
+  return trimmed.toLowerCase().endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
 const resolveLocalCandidates = () => {
   const configured = normalizeBaseUrl(process.env.REACT_APP_API_BASE_URL);
-  const stored = normalizeBaseUrl(localStorage.getItem('erp_api_base_url'));
+  const stored = normalizeBaseUrl(localStorage.getItem("erp_api_base_url"));
+
   const defaults = [
-    'http://localhost:5157/api',
-    'http://localhost:5103/api',
-    'https://localhost:7088/api'
+    configured,
+    stored,
+    "https://intermetameric-codi-unexasperating.ngrok-free.dev/api",
+    "http://localhost:5157/api",
+    "http://localhost:5103/api",
+    "https://localhost:7088/api"
   ];
 
-  const ordered = [configured, stored, ...defaults].filter(Boolean);
-  return [...new Set(ordered)];
+  return [...new Set(defaults.filter(Boolean))];
 };
 
 const candidateBaseUrls = resolveLocalCandidates();
-let activeBaseUrl = candidateBaseUrls[0] || 'http://localhost:5157/api';
+
+let activeBaseUrl = candidateBaseUrls[0] || "http://localhost:5157/api";
 
 const apiClient = axios.create({
   baseURL: activeBaseUrl,
-  timeout: 10000,
-  headers: { 'Content-Type': 'application/json' }
+  timeout: 15000,
+  headers: {
+    "Content-Type": "application/json"
+  }
 });
 
 apiClient.interceptors.request.use((config) => {
   config.baseURL = activeBaseUrl;
-  config.__candidateIndex = candidateBaseUrls.findIndex((url) => url === activeBaseUrl);
-  const token = localStorage.getItem('erp_token');
+
+  config.__candidateIndex = candidateBaseUrls.findIndex(
+    (url) => url === activeBaseUrl
+  );
+
+  const token = localStorage.getItem("erp_token");
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Important for ngrok
+  config.headers["ngrok-skip-browser-warning"] = "true";
+
   return config;
 });
 
 apiClient.interceptors.response.use(
   (response) => response,
+
   async (error) => {
     const status = error?.response?.status;
-    const requestUrl = String(error?.config?.url || '').toLowerCase();
+    const requestUrl = String(error?.config?.url || "").toLowerCase();
+
     if (
       status === 401 &&
-      !requestUrl.includes('/smart-erp/auth/login') &&
-      !requestUrl.includes('/smart-erp/auth/verify-mfa')
+      !requestUrl.includes("/smart-erp/auth/login") &&
+      !requestUrl.includes("/smart-erp/auth/verify-mfa")
     ) {
-      localStorage.removeItem('erp_token');
-      localStorage.removeItem('erp_role');
-      window.dispatchEvent(new Event('erp:unauthorized'));
+      localStorage.removeItem("erp_token");
+      localStorage.removeItem("erp_role");
+
+      window.dispatchEvent(new Event("erp:unauthorized"));
+
       return Promise.reject(error);
     }
 
     const requestConfig = error?.config;
-    const isNetworkIssue = !error?.response || error?.code === 'ERR_NETWORK' || error?.code === 'ECONNABORTED';
+
+    const isNetworkIssue =
+      !error?.response ||
+      error?.code === "ERR_NETWORK" ||
+      error?.code === "ECONNABORTED";
 
     if (!requestConfig || !isNetworkIssue) {
       return Promise.reject(error);
     }
 
     const currentIndex =
-      typeof requestConfig.__candidateIndex === 'number'
+      typeof requestConfig.__candidateIndex === "number"
         ? requestConfig.__candidateIndex
         : candidateBaseUrls.findIndex((url) => url === activeBaseUrl);
+
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= candidateBaseUrls.length) {
@@ -73,10 +183,12 @@ apiClient.interceptors.response.use(
     }
 
     activeBaseUrl = candidateBaseUrls[nextIndex];
-    localStorage.setItem('erp_api_base_url', activeBaseUrl);
+
+    localStorage.setItem("erp_api_base_url", activeBaseUrl);
 
     requestConfig.__candidateIndex = nextIndex;
     requestConfig.baseURL = activeBaseUrl;
+
     return apiClient(requestConfig);
   }
 );
