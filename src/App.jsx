@@ -152,8 +152,8 @@ export default function App() {
 }
 
 function LoginPage({ onLoginSuccess }) {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [requiresMfa, setRequiresMfa] = useState(false);
   const [mfaMessage, setMfaMessage] = useState("");
@@ -211,7 +211,7 @@ function LoginPage({ onLoginSuccess }) {
         {!requiresMfa ? (
           <form onSubmit={handleLogin} className="login-form">
             <label className="form-label" htmlFor="userId">User ID</label>
-            <input id="userId" type="text" className="form-control" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" />
+              <input id="userId" type="text" className="form-control" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" />
 
             <label className="form-label mt-3" htmlFor="password">Password</label>
             <input id="password" type="password" className="form-control" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
