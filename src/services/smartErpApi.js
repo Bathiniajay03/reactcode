@@ -1,5 +1,5 @@
 import api from './apiClient';
-
+const API = process.env.REACT_APP_API_BASE_URL;
 export const smartErpApi = {
   // System & Authentication
   initialize: () => api.post('/smart-erp/startup/initialize'),
