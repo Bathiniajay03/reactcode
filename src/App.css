@@ -69,8 +69,7 @@
 
 .app-shell {
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 240px 1fr;
+  display: flex;
 }
 
 .app-sidebar {
@@ -79,6 +78,15 @@
   display: flex;
   flex-direction: column;
   padding: 16px;
+  width: 240px;
+  min-height: 100vh;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
 .sidebar-header small {
@@ -97,28 +105,81 @@
 }
 
 .app-main {
+  flex: 1;
   padding: 20px;
   overflow-y: auto;
-  max-height: 100vh;
+  min-height: 100vh;
 }
 
-.app-page-bg {
-  background: transparent;
-}
-
-@media (max-width: 576px) {
-  .login-card {
-    padding: 22px;
-    border-radius: 12px;
+@media (min-width: 993px) {
+  .app-sidebar {
+    position: relative;
+    transform: none;
   }
 }
 
 @media (max-width: 992px) {
   .app-shell {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .app-sidebar {
-    min-height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    z-index: 1050;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+  }
+
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+  }
+
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    height: 60px;
+  }
+
+  .hamburger-btn {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    padding: 5px 10px;
+  }
+
+  .hamburger-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .close-btn {
+    font-size: 1.2rem;
+    padding: 2px 8px;
+  }
+
+  .app-main {
+    padding-top: 80px; /* Account for mobile header */
   }
 }

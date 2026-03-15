@@ -29,6 +29,7 @@ export default function App() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [prevCount, setPrevCount] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("erp_token");
@@ -112,8 +113,14 @@ export default function App() {
           <LoginPage onLoginSuccess={handleLoginSuccess} />
         ) : (
           <div className="app-shell">
-            <Sidebar navItems={navItems} role={role} onLogout={handleLogout} />
+            <Sidebar navItems={navItems} role={role} onLogout={handleLogout} isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
             <main className="app-main">
+              <div className="mobile-header d-lg-none">
+                <button className="btn btn-outline-secondary hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                  <span className="hamburger-icon">☰</span>
+                </button>
+                <h5 className="mb-0 ms-2">ERP Pro</h5>
+              </div>
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
@@ -152,8 +159,8 @@ export default function App() {
 }
 
 function LoginPage({ onLoginSuccess }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("admin123");
   const [otpCode, setOtpCode] = useState("");
   const [requiresMfa, setRequiresMfa] = useState(false);
   const [mfaMessage, setMfaMessage] = useState("");
@@ -238,23 +245,33 @@ function LoginPage({ onLoginSuccess }) {
   );
 }
 
-function Sidebar({ navItems, role, onLogout }) {
+function Sidebar({ navItems, role, onLogout, isOpen, onToggle }) {
   return (
-    <aside className="app-sidebar">
-      <div className="sidebar-header">
-        <h4 className="fw-bold m-0">ERP Pro</h4>
-        <small>{role}</small>
-      </div>
+    <>
+      {/* Mobile overlay */}
+      {isOpen && <div className="mobile-overlay d-lg-none" onClick={onToggle}></div>}
+      
+      <aside className={`app-sidebar ${isOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-header">
+          <div>
+            <h4 className="fw-bold m-0">ERP Pro</h4>
+            <small>{role}</small>
+          </div>
+          <button className="btn btn-sm btn-outline-light d-lg-none close-btn" onClick={onToggle}>
+            ✕
+          </button>
+        </div>
 
-      <ul className="nav flex-column gap-2 mt-3">
-        {navItems.map((item) => (
-          <li key={item.path} className="nav-item">
-            <Link className="nav-link sidebar-link" to={item.path}>{item.label}</Link>
-          </li>
-        ))}
-      </ul>
+        <ul className="nav flex-column gap-2 mt-3">
+          {navItems.map((item) => (
+            <li key={item.path} className="nav-item">
+              <Link className="nav-link sidebar-link" to={item.path} onClick={() => isOpen && onToggle()}>{item.label}</Link>
+            </li>
+          ))}
+        </ul>
 
-      <button className="btn btn-outline-light mt-auto" onClick={onLogout}>Logout</button>
-    </aside>
+        <button className="btn btn-outline-light mt-auto" onClick={onLogout}>Logout</button>
+      </aside>
+    </>
   );
 }
